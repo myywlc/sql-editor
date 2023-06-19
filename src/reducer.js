@@ -28,7 +28,7 @@ const reducer = (state, action) => {
               data.push(it);
             }
           });
-          newTableList.push({...item, data});
+          newTableList.push({ ...item, data });
         } else {
           newTableList.push(item);
         }
