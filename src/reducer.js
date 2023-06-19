@@ -38,8 +38,9 @@ const reducer = (state, action) => {
         tableList: newTableList,
       };
     }
-    default:
+    default: {
       throw new Error('Unexpected action');
+    }
   }
 };
 
