@@ -1,0 +1,42 @@
+.app {
+  height: 100vh;
+  display: flex;
+}
+
+.left {
+  width: 250px;
+  overflow-y: auto;
+}
+
+.left .ant-list-item-meta-avatar {
+  margin-inline-end: 10px !important;
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+}
+
+.center_top {
+  flex-grow: 1;
+  background-color: #f2f2f2;
+  overflow: auto;
+}
+
+.center_bottom {
+  height: 400px;
+  background-color: #cccccc6e;
+  padding-left: 10px;
+}
+
+.right {
+  width: 360px;
+}
+
+.ace_cursor {
+  opacity: 0 !important;
+}
+

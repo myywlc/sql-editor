@@ -1,0 +1,537 @@
+{
+  "list": {
+    "code": 1,
+    "message": "请求处理成功",
+    "data": [
+      {
+        "tableName": "cs_report"
+      },
+      {
+        "tableName": "cs_cloud_base_info",
+        "comment": "云呼基础资料"
+      },
+      {
+        "tableName": "cs_claims_hd",
+        "comment": "理赔工单处理表"
+      },
+      {
+        "tableName": "cs_headquarters_handle"
+      },
+      {
+        "tableName": "cs_special_penalty_type"
+      },
+      {
+        "tableName": "cs_special_penalty_site"
+      },
+      {
+        "tableName": "cs_wait_handle",
+        "comment": "网点待处理表"
+      },
+      {
+        "tableName": "cs_appraise_statistics"
+      }
+    ]
+  },
+  "cs_report": {
+    "code": 1,
+    "message": "请求处理成功",
+    "data": [
+      {
+        "name": "id",
+        "dataType": "bigint",
+        "tableName": "cs_report",
+        "comment": "id"
+      },
+      {
+        "name": "identification_code",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "报备编号",
+        "characterMaxLength": 20
+      },
+      {
+        "name": "report_type_id",
+        "dataType": "bigint",
+        "tableName": "cs_report",
+        "comment": "报备类型"
+      },
+      {
+        "name": "order_time_start",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_report",
+        "comment": "录单时间开始"
+      },
+      {
+        "name": "order_time_end",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_report",
+        "comment": "录单时间结束"
+      },
+      {
+        "name": "sign_time_start",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_report",
+        "comment": "签收时间开始"
+      },
+      {
+        "name": "sign_time_end",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_report",
+        "comment": "签收时间结束"
+      },
+      {
+        "name": "exception_time_start",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_report",
+        "comment": "异常发生时间开始"
+      },
+      {
+        "name": "exception_time_end",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_report",
+        "comment": "异常发生时间结束"
+      },
+      {
+        "name": "site_code",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "网点code",
+        "characterMaxLength": 20
+      },
+      {
+        "name": "site_name",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "网点名字",
+        "characterMaxLength": 50
+      },
+      {
+        "name": "report_content",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "报备内容",
+        "characterMaxLength": 500
+      },
+      {
+        "name": "report_remind",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "提示说明",
+        "characterMaxLength": 500
+      },
+      {
+        "name": "created_time",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_report",
+        "comment": "创建时间"
+      },
+      {
+        "name": "update_time",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_report",
+        "comment": "修改时间"
+      },
+      {
+        "name": "created_by",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "创建人id",
+        "characterMaxLength": 24
+      },
+      {
+        "name": "created_by_name",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "创建人",
+        "characterMaxLength": 24
+      },
+      {
+        "name": "update_by",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "修改人id",
+        "characterMaxLength": 24
+      },
+      {
+        "name": "update_by_name",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "修改人",
+        "characterMaxLength": 24
+      },
+      {
+        "name": "status",
+        "dataType": "smallint",
+        "tableName": "cs_report",
+        "comment": "状态：1-正常、2-作废、3-已驳回、4-待审核 "
+      },
+      {
+        "name": "cancel_time",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_report",
+        "comment": "作废时间"
+      },
+      {
+        "name": "cancel_by",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "作废人id",
+        "characterMaxLength": 24
+      },
+      {
+        "name": "cancel_by_name",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "作废人",
+        "characterMaxLength": 24
+      },
+      {
+        "name": "cancel_reason",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "作废原因",
+        "characterMaxLength": 200
+      },
+      {
+        "name": "annex",
+        "dataType": "jsonb",
+        "tableName": "cs_report",
+        "comment": "附件jsonb对象"
+      },
+      {
+        "name": "low_status",
+        "dataType": "smallint",
+        "tableName": "cs_report",
+        "comment": "是否适用于下级 默认1:适用，2:不适用"
+      },
+      {
+        "name": "delete_status",
+        "dataType": "smallint",
+        "tableName": "cs_report",
+        "comment": "删除状态，1-未删除、2-已删除"
+      },
+      {
+        "name": "center_code",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "分拨code",
+        "characterMaxLength": 20
+      },
+      {
+        "name": "center_name",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "分拨名字",
+        "characterMaxLength": 20
+      },
+      {
+        "name": "province_area_code",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "省区code",
+        "characterMaxLength": 20
+      },
+      {
+        "name": "province_area_name",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "省区名字",
+        "characterMaxLength": 20
+      },
+      {
+        "name": "source",
+        "dataType": "smallint",
+        "tableName": "cs_report",
+        "comment": "来源"
+      },
+      {
+        "name": "unsocial_id",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "其他id",
+        "characterMaxLength": 24
+      },
+      {
+        "name": "first_site_code",
+        "dataType": "character varying",
+        "tableName": "cs_report",
+        "comment": "一级网点code",
+        "characterMaxLength": 16
+      }
+    ]
+  },
+  "cs_cloud_base_info": {
+    "code": 1,
+    "message": "请求处理成功",
+    "data": [
+      {
+        "name": "site_type",
+        "dataType": "smallint",
+        "tableName": "cs_cloud_base_info",
+        "comment": "网点类型"
+      },
+      {
+        "name": "site_status",
+        "dataType": "smallint",
+        "tableName": "cs_cloud_base_info",
+        "comment": "网点状态:"
+      },
+      {
+        "name": "channel",
+        "dataType": "smallint",
+        "tableName": "cs_cloud_base_info",
+        "comment": "云呼渠道:1:263 2:三地"
+      },
+      {
+        "name": "install_status",
+        "dataType": "smallint",
+        "tableName": "cs_cloud_base_info",
+        "comment": "安装状态"
+      },
+      {
+        "name": "latest_progress",
+        "dataType": "smallint",
+        "tableName": "cs_cloud_base_info",
+        "comment": "最新进度"
+      },
+      {
+        "name": "detail_info",
+        "dataType": "jsonb",
+        "tableName": "cs_cloud_base_info",
+        "comment": "详情"
+      },
+      {
+        "name": "delete_status",
+        "dataType": "smallint",
+        "tableName": "cs_cloud_base_info",
+        "comment": "逻辑删除： 1正常 2-删除"
+      }
+    ]
+  },
+  "cs_claims_hd": {
+    "code": 1,
+    "message": "请求处理成功",
+    "data": [
+      {
+        "name": "id",
+        "dataType": "bigint",
+        "tableName": "cs_claims_hd",
+        "comment": "处理表ID"
+      },
+      {
+        "name": "claims_id",
+        "dataType": "bigint",
+        "tableName": "cs_claims_hd",
+        "comment": "理赔表主键ID"
+      },
+      {
+        "name": "handled_by",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "处理人工号",
+        "characterMaxLength": 24
+      },
+      {
+        "name": "created_time",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_claims_hd",
+        "comment": "创建时间"
+      },
+      {
+        "name": "update_time",
+        "dataType": "timestamp without time zone",
+        "tableName": "cs_claims_hd",
+        "comment": "最后修改时间"
+      },
+      {
+        "name": "annex",
+        "dataType": "jsonb",
+        "tableName": "cs_claims_hd",
+        "comment": "附件JSONB对象"
+      },
+      {
+        "name": "handle_type",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "处理状态：1-已冻结、2-待登记、3-待处理、4-快速理赔、5-已冻结未申报理赔、6-已修正、7-启用冻结、11-中心已驳回、12-中心已提交、13-中心不处理、14-中心处理完成、15-中心审核通过、16-中心审核不通过、17-结算审核通过、18-结算审核不通过19-结算审核中、21-核损处理中、22-核损驳回、23-核损通过 31网点申诉 32申诉处理完成 33-申诉驳回"
+      },
+      {
+        "name": "qualified",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "包装是否合格 1-是 2-否"
+      },
+      {
+        "name": "insurance",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "是否足额投保：1-是 2-否"
+      },
+      {
+        "name": "fixed_amount",
+        "dataType": "numeric",
+        "tableName": "cs_claims_hd",
+        "comment": "定损金额"
+      },
+      {
+        "name": "comp_amount",
+        "dataType": "numeric",
+        "tableName": "cs_claims_hd",
+        "comment": "公司保价"
+      },
+      {
+        "name": "claim_amount",
+        "dataType": "numeric",
+        "tableName": "cs_claims_hd",
+        "comment": "理赔金额(公司对保险)"
+      },
+      {
+        "name": "real_amount",
+        "dataType": "numeric",
+        "tableName": "cs_claims_hd",
+        "comment": "实际理赔金额(公司对网点)"
+      },
+      {
+        "name": "finish_explain",
+        "dataType": "text",
+        "tableName": "cs_claims_hd",
+        "comment": "完结说明/驳回理由/审批说明"
+      },
+      {
+        "name": "accident_info",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "事故描述",
+        "characterMaxLength": 300
+      },
+      {
+        "name": "goods_industry",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "货物所属行业\r\n1 服装纺织类、2生活办公电器类、3生活办公日化类 、4工业设备五金仪器类、5塑胶建材类、6食品类、7药品类、8家具类、9易损易碎类、10工艺品类"
+      },
+      {
+        "name": "delete_status",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "删除状态，1-未删除、2-已删除"
+      },
+      {
+        "name": "handled_by_name",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "处理人名称",
+        "characterMaxLength": 25
+      },
+      {
+        "name": "site_code",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "处理网点code",
+        "characterMaxLength": 25
+      },
+      {
+        "name": "site_code_name",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "处理网点Name",
+        "characterMaxLength": 25
+      },
+      {
+        "name": "handle_goods_name",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "货物名称",
+        "characterMaxLength": 200
+      },
+      {
+        "name": "claimant_amount",
+        "dataType": "numeric",
+        "tableName": "cs_claims_hd",
+        "comment": "登记索赔金额"
+      },
+      {
+        "name": "center_goods_value",
+        "dataType": "numeric",
+        "tableName": "cs_claims_hd",
+        "comment": "中心处理货物价值"
+      },
+      {
+        "name": "approve_reject",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "审批后驳回标识 0默认 1：审批后一次驳回"
+      },
+      {
+        "name": "handled_by_id",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "处理人id",
+        "characterMaxLength": 24
+      },
+      {
+        "name": "no_claims",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "是否保险不予理赔 0 默认  1是 2否"
+      },
+      {
+        "name": "vulnerable_category",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "是否为易损易碎类(0默认 1是 2否 )"
+      },
+      {
+        "name": "real_site_id",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "实际理赔网点id",
+        "characterMaxLength": 25
+      },
+      {
+        "name": "real_site_code",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "实际理赔网点code",
+        "characterMaxLength": 25
+      },
+      {
+        "name": "real_site_name",
+        "dataType": "character varying",
+        "tableName": "cs_claims_hd",
+        "comment": "实际理赔网点name",
+        "characterMaxLength": 25
+      },
+      {
+        "name": "trans_type",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "申诉金额类型 :补推金额/扣款金额（收入/支出） 0：收入，1：支出"
+      },
+      {
+        "name": "claims_type_id",
+        "dataType": "bigint",
+        "tableName": "cs_claims_hd",
+        "comment": "理赔类型id"
+      },
+      {
+        "name": "amount_difference",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "金额差异备注"
+      },
+      {
+        "name": "accident_type",
+        "dataType": "smallint",
+        "tableName": "cs_claims_hd",
+        "comment": "事故类型"
+      },
+      {
+        "name": "ext_attr",
+        "dataType": "jsonb",
+        "tableName": "cs_claims_hd",
+        "comment": "扩展字段"
+      }
+    ]
+  }
+}
