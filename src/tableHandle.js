@@ -2,7 +2,6 @@ import { Tabs } from 'antd';
 import { FileAddOutlined } from '@ant-design/icons';
 
 function RenderHandle({ active, data }) {
-  console.log(data, 'data');
   return (
     <div>
       {

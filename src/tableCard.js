@@ -17,6 +17,17 @@ function TableCard({ tableList = [], dispatch }) {
                 width: 260,
                 height: 300,
               }}
+              extra={(
+                <a
+                  style={{ color: '#fff' }}
+                  onClick={() => dispatch({
+                    type: 'remove_table',
+                    payload: { tableName: item.tableName },
+                  })}
+                >
+                  X
+                </a>
+              )}
             >
               <List
                 size="small"
@@ -25,9 +36,9 @@ function TableCard({ tableList = [], dispatch }) {
                 renderItem={(it) => (
                   <List.Item style={{ padding: '6px 0' }}>
                     <Checkbox
-                      onClick={() => dispatch({
-                        type: 'add_table_field',
-                        payload: { tableName: item.tableName, field: it.name },
+                      onChange={(e) => dispatch({
+                        type: 'add_or_remove_table_field',
+                        payload: { tableName: item.tableName, field: it.name, checked: e.target.checked },
                       })}
                       checked={it?.checked ?? false}
                     >

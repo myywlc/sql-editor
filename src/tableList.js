@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { List } from 'antd';
 import { TableOutlined } from '@ant-design/icons';
 
-function TableList({ dispatch }) {
+function TableList({ tableList, dispatch }) {
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -12,8 +12,11 @@ function TableList({ dispatch }) {
   }, []);
 
   const handleClickAddTable = (table) => {
+    const find = tableList.find(it => it.tableName === table.tableName);
+    if (find) return;
     fetch('http://localhost:3001/' + table.tableName).then(res => res.json()).then(res => {
-      dispatch({ type: 'add_table', payload: { tableName: table.tableName, data: res.data } });
+      const data = [{ name: '*', comment: '*' }, ...res.data];
+      dispatch({ type: 'add_table', payload: { tableName: table.tableName, data } });
     });
   };
 
@@ -26,8 +29,11 @@ function TableList({ dispatch }) {
           <List.Item>
             <List.Item.Meta
               avatar={<TableOutlined style={{ fontSize: 24, margin: '6px 0 0 6px' }} rotate={90} />}
-              title={<a onClick={() => handleClickAddTable(item)}
-                        style={{ fontWeight: 500 }}>{item.tableName}</a>}
+              title={(
+                <a onClick={() => handleClickAddTable(item)} style={{ fontWeight: 500 }}>
+                  {item.tableName}
+                </a>
+              )}
               description={<span style={{ fontSize: 12 }}>{item?.comment ?? ''}</span>}
             />
           </List.Item>
