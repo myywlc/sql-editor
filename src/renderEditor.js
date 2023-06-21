@@ -4,16 +4,16 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools';
 
 function RenderEditor({ keywordData }) {
-  const selectStringFn = (select) => {
+  const selectStringFn = (select,distinct) => {
     let selectString;
     if (select && select.length === 0) {
       selectString = `
-SELECT
+SELECT${distinct ? ' DISTINCT' : ''}
   *
 `;
     } else {
       selectString = `
-SELECT`;
+SELECT${distinct ? ' DISTINCT' : ''}`;
       selectString = [selectString, ...select.map((it, i) => (it.tableNameAlias ? `"${it.tableNameAlias}"` : it.tableName) + '.' + it.field + (it.fieldAlias ? ` AS "${it.fieldAlias}"` : '') + ((select.length - 1) !== i ? ',' : ''))].join('\n  ');
     }
     return selectString;
@@ -30,11 +30,11 @@ FROM`;
   };
 
   const parseSql = (keywordData) => {
-    const { select, from, where, groupBy, having, orderBy, limit } = keywordData;
+    const { select, from, where, groupBy, having, orderBy, limit, distinct } = keywordData;
     let whereString = '', groupByString = '', havingString = '',
       orderByString = '', limitString = '';
 
-    const selectString = selectStringFn(select);
+    const selectString = selectStringFn(select, distinct);
     const fromString = fromStringFn(from);
 
     return selectString + fromString + whereString + groupByString + havingString + orderByString + limitString;

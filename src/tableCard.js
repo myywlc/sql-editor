@@ -1,8 +1,16 @@
 import { Card, Checkbox, List, Space } from 'antd';
+import { useRef } from 'react';
+import { useDrop } from 'ahooks';
 
-function TableCard({ tableList = [], dispatch }) {
+function TableCard({ tableList = [], addTable, dispatch }) {
+  const dropRef = useRef(null);
+
+  useDrop(dropRef, {
+    onDom: addTable,
+  });
+
   return (
-    <div className="center_top">
+    <div className="center_top" ref={dropRef}>
       <Space direction="horizontal" size={16} align={'center'} style={{ padding: '20px 20px' }}>
         {
           tableList.map((item, i) => (

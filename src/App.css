@@ -40,3 +40,11 @@
   opacity: 0 !important;
 }
 
+.selectHoverA {
+  opacity: 0;
+}
+
+.selectHover:hover .selectHoverA {
+  opacity: 1;
+}
+
