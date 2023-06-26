@@ -92,6 +92,25 @@ const reducer = (state, action) => {
         },
       };
     }
+    case 'tableAliasChange': {
+      const { tableName, value } = payload;
+      const newFrom = [];
+      state.keywordData.from.forEach(item => {
+        if (item.name === tableName) {
+          newFrom.push({ ...item, alias: value });
+        } else {
+          newFrom.push(item);
+        }
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          from: newFrom,
+        },
+      };
+    }
     case 'up_or_down_table_field': {
       const { tableName, field, direction } = payload;
       const fromIndex = state.keywordData.select.findIndex(it => it.tableName === tableName && it.field === field);
@@ -129,6 +148,19 @@ const reducer = (state, action) => {
         keywordData: {
           ...state?.keywordData ?? {},
           distinct,
+        },
+      };
+    }
+    case 'limitChange': {
+      const { limitType, value } = payload;
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          limit: {
+            ...state?.keywordData?.limit ?? {},
+            [limitType]: value,
+          },
         },
       };
     }

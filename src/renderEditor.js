@@ -4,7 +4,7 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools';
 
 function RenderEditor({ keywordData }) {
-  const selectStringFn = (select,distinct) => {
+  const selectStringFn = (select, distinct) => {
     let selectString;
     if (select && select.length === 0) {
       selectString = `
@@ -29,13 +29,27 @@ FROM`;
     return fromString;
   };
 
+  const limitStringFn = (limit) => {
+    let limitString = '';
+    if (limit.limit) {
+      limitString += `
+LIMIT ${limit.limit}`
+    }
+    if (limit.limit && limit.offset) {
+      limitString += `
+OFFSET ${limit.offset}`
+    }
+    return limitString;
+  }
+
   const parseSql = (keywordData) => {
     const { select, from, where, groupBy, having, orderBy, limit, distinct } = keywordData;
     let whereString = '', groupByString = '', havingString = '',
-      orderByString = '', limitString = '';
+      orderByString = '';
 
     const selectString = selectStringFn(select, distinct);
     const fromString = fromStringFn(from);
+    const limitString = limitStringFn(limit);
 
     return selectString + fromString + whereString + groupByString + havingString + orderByString + limitString;
   };
@@ -66,6 +80,7 @@ FROM`;
           // highlightSelectedWord: false,
         }}
       />
+      <div className="unUserSelect" />
     </div>
   );
 }

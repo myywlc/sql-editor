@@ -22,6 +22,15 @@ function App() {
     sql: '',
   });
 
+  // useEffect(() => {
+  //   const data = {};
+  //
+  //   dispatch({
+  //     type: 'init',
+  //     payload: data,
+  //   })
+  // }, [])
+
   const addTable = (table) => {
     const find = state.tableList.find(it => it.tableName === table.tableName);
     if (find) return;
