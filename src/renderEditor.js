@@ -128,6 +128,16 @@ ${ids.map(() => '  ').join('')}) ${lastIndex === index ? '' : item.connectors}\n
     return whereString;
   };
 
+  const groupByStringFn = (groupBy) => {
+    let groupByString;
+    if (groupBy && groupBy.length > 0) {
+      groupByString = `
+GROUP BY`;
+      groupByString = [groupByString, ...groupBy.map((it, i) => (it.isCustom ? it.value : ((it.tableAlias ? `"${it.tableAlias}"` : it.tableName) + '.' + it.field)) + ((groupBy.length - 1) !== i ? ',' : ''))].join('\n  ');
+    }
+    return groupByString;
+  };
+
   const havingStringFn = (having) => {
     let havingString = '';
     if (having.length > 0) {
@@ -155,6 +165,16 @@ ${ids.map(() => '  ').join('')}) ${lastIndex === index ? '' : item.connectors}\n
     return havingString;
   };
 
+  const orderByStringFn = (orderBy) => {
+    let orderByString;
+    if (orderBy && orderBy.length > 0) {
+      orderByString = `
+ORDER BY`;
+      orderByString = [orderByString, ...orderBy.map((it, i) => (it.isCustom ? it.value : ((it.tableAlias ? `"${it.tableAlias}"` : it.tableName) + '.' + it.field)) + ((orderBy.length - 1) !== i ? ',' : ''))].join('\n  ');
+    }
+    return orderByString;
+  };
+
   const limitStringFn = (limit) => {
     let limitString = '';
     if (limit.limit) {
@@ -170,12 +190,13 @@ OFFSET ${limit.offset}`;
 
   const parseSql = (keywordData) => {
     const { select, from, where, groupBy, having, orderBy, limit, distinct } = keywordData;
-    let groupByString = '', orderByString = '';
 
     const selectString = selectStringFn(select, distinct);
     const fromString = fromStringFn(from);
     const whereString = whereStringFn(where);
+    const groupByString = groupByStringFn(groupBy);
     const havingString = havingStringFn(having);
+    const orderByString = orderByStringFn(orderBy);
     const limitString = limitStringFn(limit);
 
     return selectString + fromString + whereString + groupByString + havingString + orderByString + limitString;

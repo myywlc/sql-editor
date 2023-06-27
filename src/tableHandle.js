@@ -177,7 +177,8 @@ const PopoverList = ({ dispatch, target, value, children }) => {
     <Popover
       destroyTooltipOnHide
       content={(
-        <TextArea placeholder="请输入以,分隔" rows={6} defaultValue={value} onPressEnter={(e) => handleList(e.target.value)} />
+        <TextArea placeholder="请输入以,分隔" rows={6} defaultValue={value}
+                  onPressEnter={(e) => handleList(e.target.value)} />
       )}
       trigger="click"
       open={open}
@@ -813,6 +814,274 @@ function WhereHandle({ where, from, tableList, dispatch }) {
   );
 }
 
+const PopoverSelectGroupBy = ({ selectData, dispatch, value = '', isCustom, index, children }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (newOpen) => {
+    setOpen(newOpen);
+  };
+
+  const handleSelect = (data) => {
+    if (index) {
+      dispatch({
+        type: 'change_groupBy',
+        payload: {
+          index: Number(index),
+          tableName: data.tableName,
+          tableAlias: data.tableAlias,
+          field: data.title,
+          isCustom: false,
+        },
+      });
+    } else {
+      dispatch({
+        type: 'add_groupBy',
+        payload: {
+          tableName: data.tableName,
+          tableAlias: data.tableAlias,
+          field: data.title,
+          isCustom: false,
+        },
+      });
+    }
+    setOpen(false);
+  };
+
+  const handleCustom = (data) => {
+    if (index) {
+      dispatch({
+        type: 'change_groupBy',
+        payload: {
+          index: Number(index),
+          value: data,
+          isCustom: true,
+        },
+      });
+    } else {
+      dispatch({
+        type: 'add_groupBy',
+        payload: {
+          value: data,
+          isCustom: true,
+        },
+      });
+    }
+
+    setOpen(false);
+  };
+
+  const renderContent = () => {
+    const items = [
+      {
+        key: '1',
+        label: `Identifier`,
+        children: <Identifier selectData={selectData} handleSelect={handleSelect} />,
+      },
+      {
+        key: '2',
+        label: `Custom`,
+        children: <Custom isCustom={isCustom} value={value} handleCustom={handleCustom} />,
+      },
+    ];
+
+    return (
+      <div style={{ width: 240, height: 300, overflow: 'auto' }}>
+        <Tabs size="small" centered defaultActiveKey={isCustom ? '2' : '1'} items={items} />
+      </div>
+    );
+  };
+
+
+  return (
+    <Popover
+      destroyTooltipOnHide
+      content={renderContent}
+      trigger="click"
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
+      {children}
+    </Popover>
+  );
+};
+
+function GroupByHandle({ groupBy, from, tableList, dispatch }) {
+  const selectData = useMemo(() => {
+    const data = [];
+    from.forEach((item, index) => {
+      const { name, alias } = item;
+      const fItem = tableList.find(item => item.tableName === name);
+      data.push({
+        title: fItem.tableName + (alias ? `(${alias})` : ''),
+        key: `0-${index}`,
+        children: fItem.data.filter(it => it.name !== '*').map((it, i) => ({
+          title: it.name,
+          key: `0-${index}-${i}`,
+          isLeaf: true,
+          tableName: name,
+          tableAlias: alias,
+        })),
+      });
+    });
+    return data;
+  }, [from, tableList]);
+
+  const lastIndex = groupBy.length - 1;
+  return (
+    <div style={{ maxHeight: 318, overflowY: 'auto' }}>
+      {
+        (groupBy.length === 0) ? (
+          <a>
+            <PopoverSelectGroupBy selectData={selectData} dispatch={dispatch} isCustom={false}>
+              <FileAddOutlined style={{ marginRight: 6 }} />
+            </PopoverSelectGroupBy>
+            <span style={{ color: '#0000006e' }}>添加</span>
+          </a>
+        ) : (
+          groupBy.map((it, i) => {
+            if (it.isCustom) {
+              return (
+                <div key={i} className="selectHover">
+                  <PopoverSelectGroupBy selectData={selectData} dispatch={dispatch} isCustom={false} index={i + ''}>
+                    Expression: <a>{`${it.value}`}</a>
+                  </PopoverSelectGroupBy>
+                  {(lastIndex === i) && (
+                    <a style={{ marginLeft: 6 }}>
+                      <PopoverSelectGroupBy selectData={selectData} dispatch={dispatch} isCustom={false}>
+                        <FileAddOutlined style={{ marginRight: 6 }} />
+                      </PopoverSelectGroupBy>
+                    </a>
+                  )}
+                  <a
+                    className="selectHoverA"
+                    style={{
+                      color: '#fff',
+                      backgroundColor: '#b2b2b2',
+                      fontSize: 12,
+                      padding: '0 5px',
+                      marginLeft: 6,
+                    }}
+                    onClick={() => dispatch({
+                      type: 'remove_groupBy',
+                      payload: {
+                        index: i,
+                      },
+                    })}
+                  >
+                    X
+                  </a>
+                  {
+                    i !== 0 && (
+                      <a
+                        className="selectHoverA"
+                        style={{ marginLeft: 6 }}
+                        onClick={() => dispatch({
+                          type: 'up_or_down_groupBy',
+                          payload: {
+                            fromIndex: i,
+                            direction: true,
+                          },
+                        })}
+                      >
+                        <ArrowUpOutlined />
+                      </a>
+                    )
+                  }
+                  {
+                    i !== lastIndex && (
+                      <a
+                        className="selectHoverA"
+                        style={{ marginLeft: 6 }}
+                        onClick={() => dispatch({
+                          type: 'up_or_down_groupBy',
+                          payload: {
+                            fromIndex: i,
+                            direction: false,
+                          },
+                        })}
+                      >
+                        <ArrowDownOutlined />
+                      </a>
+                    )
+                  }
+                </div>
+              );
+            } else {
+              return (
+                <div key={i} className="selectHover">
+                  <PopoverSelectGroupBy selectData={selectData} dispatch={dispatch} isCustom={false}
+                                        index={i + ''}>
+                    <a>{`${it.tableAlias || it.tableName}.${it.field}`}</a>
+                  </PopoverSelectGroupBy>
+                  {(lastIndex === i) && (
+                    <a style={{ marginLeft: 6 }}>
+                      <PopoverSelectGroupBy selectData={selectData} dispatch={dispatch} isCustom={false}>
+                        <FileAddOutlined style={{ marginRight: 6 }} />
+                      </PopoverSelectGroupBy>
+                    </a>
+                  )}
+                  <a
+                    className="selectHoverA"
+                    style={{
+                      color: '#fff',
+                      backgroundColor: '#b2b2b2',
+                      fontSize: 12,
+                      padding: '0 5px',
+                      marginLeft: 6,
+                    }}
+                    onClick={() => dispatch({
+                      type: 'remove_groupBy',
+                      payload: {
+                        index: i,
+                      },
+                    })}
+                  >
+                    X
+                  </a>
+                  {
+                    i !== 0 && (
+                      <a
+                        className="selectHoverA"
+                        style={{ marginLeft: 6 }}
+                        onClick={() => dispatch({
+                          type: 'up_or_down_groupBy',
+                          payload: {
+                            fromIndex: i,
+                            direction: true,
+                          },
+                        })}
+                      >
+                        <ArrowUpOutlined />
+                      </a>
+                    )
+                  }
+                  {
+                    i !== lastIndex && (
+                      <a
+                        className="selectHoverA"
+                        style={{ marginLeft: 6 }}
+                        onClick={() => dispatch({
+                          type: 'up_or_down_groupBy',
+                          payload: {
+                            fromIndex: i,
+                            direction: false,
+                          },
+                        })}
+                      >
+                        <ArrowDownOutlined />
+                      </a>
+                    )
+                  }
+                </div>
+              );
+            }
+          })
+        )
+      }
+    </div>
+  );
+}
+
 const PopoverSelectHaving = ({ selectData, dispatch, target, fieldKey, isCustom, value, children }) => {
   const [open, setOpen] = useState(false);
 
@@ -962,7 +1231,8 @@ const PopoverListHaving = ({ dispatch, target, value, children }) => {
     <Popover
       destroyTooltipOnHide
       content={(
-        <TextArea placeholder="请输入以,分隔" rows={6} defaultValue={value} onPressEnter={(e) => handleList(e.target.value)} />
+        <TextArea placeholder="请输入以,分隔" rows={6} defaultValue={value}
+                  onPressEnter={(e) => handleList(e.target.value)} />
       )}
       trigger="click"
       open={open}
@@ -1245,7 +1515,7 @@ function HavingHandle({ having, from, tableList, dispatch }) {
               return (
                 <div key={i} className="selectHover">
                   <PopoverSelectHaving selectData={selectData} dispatch={dispatch} target={it.id}
-                                 fieldKey={'leftValue'} isCustom={it.isLeftCustom} value={it.leftValue}>
+                                       fieldKey={'leftValue'} isCustom={it.isLeftCustom} value={it.leftValue}>
                     {
                       it.leftValue && <span className={'fontOverflow'}>{it.leftValue}</span> ||
                       <span style={{ color: '#c0c0c0', cursor: 'pointer' }}>{'<value>'}</span>
@@ -1273,8 +1543,8 @@ function HavingHandle({ having, from, tableList, dispatch }) {
                       'does not end with',
                     ].includes(it.operator) && (
                       <PopoverSelectHaving selectData={selectData} dispatch={dispatch} target={it.id}
-                                     fieldKey={'rightValue'} isCustom={it.isRightCustom}
-                                     value={it.rightValue}>
+                                           fieldKey={'rightValue'} isCustom={it.isRightCustom}
+                                           value={it.rightValue}>
                         {
                           it.rightValue && <span className={'fontOverflow'}>{it.rightValue}</span> ||
                           <span style={{ color: '#c0c0c0', cursor: 'pointer' }}>{'<value>'}</span>
@@ -1395,6 +1665,274 @@ function HavingHandle({ having, from, tableList, dispatch }) {
   );
 }
 
+const PopoverSelectOrderBy = ({ selectData, dispatch, value = '', isCustom, index, children }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (newOpen) => {
+    setOpen(newOpen);
+  };
+
+  const handleSelect = (data) => {
+    if (index) {
+      dispatch({
+        type: 'change_orderBy',
+        payload: {
+          index: Number(index),
+          tableName: data.tableName,
+          tableAlias: data.tableAlias,
+          field: data.title,
+          isCustom: false,
+        },
+      });
+    } else {
+      dispatch({
+        type: 'add_orderBy',
+        payload: {
+          tableName: data.tableName,
+          tableAlias: data.tableAlias,
+          field: data.title,
+          isCustom: false,
+        },
+      });
+    }
+    setOpen(false);
+  };
+
+  const handleCustom = (data) => {
+    if (index) {
+      dispatch({
+        type: 'change_orderBy',
+        payload: {
+          index: Number(index),
+          value: data,
+          isCustom: true,
+        },
+      });
+    } else {
+      dispatch({
+        type: 'add_orderBy',
+        payload: {
+          value: data,
+          isCustom: true,
+        },
+      });
+    }
+
+    setOpen(false);
+  };
+
+  const renderContent = () => {
+    const items = [
+      {
+        key: '1',
+        label: `Identifier`,
+        children: <Identifier selectData={selectData} handleSelect={handleSelect} />,
+      },
+      {
+        key: '2',
+        label: `Custom`,
+        children: <Custom isCustom={isCustom} value={value} handleCustom={handleCustom} />,
+      },
+    ];
+
+    return (
+      <div style={{ width: 240, height: 300, overflow: 'auto' }}>
+        <Tabs size="small" centered defaultActiveKey={isCustom ? '2' : '1'} items={items} />
+      </div>
+    );
+  };
+
+
+  return (
+    <Popover
+      destroyTooltipOnHide
+      content={renderContent}
+      trigger="click"
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
+      {children}
+    </Popover>
+  );
+};
+
+function OrderByHandle({ orderBy, from, tableList, dispatch }) {
+  const selectData = useMemo(() => {
+    const data = [];
+    from.forEach((item, index) => {
+      const { name, alias } = item;
+      const fItem = tableList.find(item => item.tableName === name);
+      data.push({
+        title: fItem.tableName + (alias ? `(${alias})` : ''),
+        key: `0-${index}`,
+        children: fItem.data.filter(it => it.name !== '*').map((it, i) => ({
+          title: it.name,
+          key: `0-${index}-${i}`,
+          isLeaf: true,
+          tableName: name,
+          tableAlias: alias,
+        })),
+      });
+    });
+    return data;
+  }, [from, tableList]);
+
+  const lastIndex = orderBy.length - 1;
+  return (
+    <div style={{ maxHeight: 318, overflowY: 'auto' }}>
+      {
+        (orderBy.length === 0) ? (
+          <a>
+            <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={false}>
+              <FileAddOutlined style={{ marginRight: 6 }} />
+            </PopoverSelectOrderBy>
+            <span style={{ color: '#0000006e' }}>添加</span>
+          </a>
+        ) : (
+          orderBy.map((it, i) => {
+            if (it.isCustom) {
+              return (
+                <div key={i} className="selectHover">
+                  <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={false} index={i + ''}>
+                    Expression: <a>{`${it.value}`}</a>
+                  </PopoverSelectOrderBy>
+                  {(lastIndex === i) && (
+                    <a style={{ marginLeft: 6 }}>
+                      <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={false}>
+                        <FileAddOutlined style={{ marginRight: 6 }} />
+                      </PopoverSelectOrderBy>
+                    </a>
+                  )}
+                  <a
+                    className="selectHoverA"
+                    style={{
+                      color: '#fff',
+                      backgroundColor: '#b2b2b2',
+                      fontSize: 12,
+                      padding: '0 5px',
+                      marginLeft: 6,
+                    }}
+                    onClick={() => dispatch({
+                      type: 'remove_orderBy',
+                      payload: {
+                        index: i,
+                      },
+                    })}
+                  >
+                    X
+                  </a>
+                  {
+                    i !== 0 && (
+                      <a
+                        className="selectHoverA"
+                        style={{ marginLeft: 6 }}
+                        onClick={() => dispatch({
+                          type: 'up_or_down_orderBy',
+                          payload: {
+                            fromIndex: i,
+                            direction: true,
+                          },
+                        })}
+                      >
+                        <ArrowUpOutlined />
+                      </a>
+                    )
+                  }
+                  {
+                    i !== lastIndex && (
+                      <a
+                        className="selectHoverA"
+                        style={{ marginLeft: 6 }}
+                        onClick={() => dispatch({
+                          type: 'up_or_down_orderBy',
+                          payload: {
+                            fromIndex: i,
+                            direction: false,
+                          },
+                        })}
+                      >
+                        <ArrowDownOutlined />
+                      </a>
+                    )
+                  }
+                </div>
+              );
+            } else {
+              return (
+                <div key={i} className="selectHover">
+                  <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={false}
+                                        index={i + ''}>
+                    <a>{`${it.tableAlias || it.tableName}.${it.field}`}</a>
+                  </PopoverSelectOrderBy>
+                  {(lastIndex === i) && (
+                    <a style={{ marginLeft: 6 }}>
+                      <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={false}>
+                        <FileAddOutlined style={{ marginRight: 6 }} />
+                      </PopoverSelectOrderBy>
+                    </a>
+                  )}
+                  <a
+                    className="selectHoverA"
+                    style={{
+                      color: '#fff',
+                      backgroundColor: '#b2b2b2',
+                      fontSize: 12,
+                      padding: '0 5px',
+                      marginLeft: 6,
+                    }}
+                    onClick={() => dispatch({
+                      type: 'remove_orderBy',
+                      payload: {
+                        index: i,
+                      },
+                    })}
+                  >
+                    X
+                  </a>
+                  {
+                    i !== 0 && (
+                      <a
+                        className="selectHoverA"
+                        style={{ marginLeft: 6 }}
+                        onClick={() => dispatch({
+                          type: 'up_or_down_orderBy',
+                          payload: {
+                            fromIndex: i,
+                            direction: true,
+                          },
+                        })}
+                      >
+                        <ArrowUpOutlined />
+                      </a>
+                    )
+                  }
+                  {
+                    i !== lastIndex && (
+                      <a
+                        className="selectHoverA"
+                        style={{ marginLeft: 6 }}
+                        onClick={() => dispatch({
+                          type: 'up_or_down_orderBy',
+                          payload: {
+                            fromIndex: i,
+                            direction: false,
+                          },
+                        })}
+                      >
+                        <ArrowDownOutlined />
+                      </a>
+                    )
+                  }
+                </div>
+              );
+            }
+          })
+        )
+      }
+    </div>
+  );
+}
+
 function LimitHandle({ limit, dispatch }) {
   const handleChangeLimit = (limitType, e) => {
     dispatch({
@@ -1463,18 +2001,20 @@ function TableHandle({ keywordData = {}, tableList = [], dispatch }) {
     {
       key: '4',
       label: 'GROUP BY',
-      children: 'Content of Tab Pane 1',
+      children: <GroupByHandle groupBy={keywordData.groupBy} from={keywordData.from} tableList={tableList}
+                               dispatch={dispatch} />,
     },
     {
       key: '5',
       label: 'HAVING',
       children: <HavingHandle having={keywordData.having} from={keywordData.from} tableList={tableList}
-                             dispatch={dispatch} />,
+                              dispatch={dispatch} />,
     },
     {
       key: '6',
       label: 'ORDER BY',
-      children: 'Content of Tab Pane 3',
+      children: <OrderByHandle orderBy={keywordData.orderBy} from={keywordData.from} tableList={tableList}
+                               dispatch={dispatch} />,
     },
     {
       key: '7',

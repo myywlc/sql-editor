@@ -521,6 +521,152 @@ const reducer = (state, action) => {
       };
     }
 
+    case 'add_groupBy': {
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          groupBy: [
+            ...state?.keywordData?.groupBy ?? [],
+            { ...payload },
+          ],
+        },
+      };
+    }
+    case 'remove_groupBy': {
+      const { index } = payload;
+      const newGroupBy = state.keywordData.groupBy.filter((it, i) => i !== index);
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          groupBy: newGroupBy,
+        },
+      };
+    }
+
+    case 'change_groupBy': {
+      const { index, ...rest } = payload;
+      const newGroupBy = state.keywordData.groupBy.map((it, i) => {
+        if (index === i) {
+          return {...rest}
+        }
+        return it
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          groupBy: newGroupBy,
+        },
+      };
+    }
+
+    case 'up_or_down_groupBy': {
+      const { fromIndex, direction } = payload;
+      let toIndex;
+      if (direction) {
+        if (fromIndex === 0) return state;
+        toIndex = fromIndex - 1;
+      } else {
+        if (fromIndex === state.keywordData.groupBy.length - 1) return state;
+        toIndex = fromIndex + 1;
+      }
+      const newGroupBy = [];
+      state.keywordData.groupBy.forEach((item, index) => {
+        if (index === fromIndex) {
+          newGroupBy[toIndex] = item;
+        } else if (index === toIndex) {
+          newGroupBy[fromIndex] = item;
+        } else {
+          newGroupBy.push(item);
+        }
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          groupBy: newGroupBy,
+        },
+      };
+    }
+
+    case 'add_orderBy': {
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          orderBy: [
+            ...state?.keywordData?.orderBy ?? [],
+            { ...payload },
+          ],
+        },
+      };
+    }
+    case 'remove_orderBy': {
+      const { index } = payload;
+      const newOrderBy = state.keywordData.orderBy.filter((it, i) => i !== index);
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          orderBy: newOrderBy,
+        },
+      };
+    }
+
+    case 'change_orderBy': {
+      const { index, ...rest } = payload;
+      const newOrderBy = state.keywordData.orderBy.map((it, i) => {
+        if (index === i) {
+          return {...rest}
+        }
+        return it
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          orderBy: newOrderBy,
+        },
+      };
+    }
+
+    case 'up_or_down_orderBy': {
+      const { fromIndex, direction } = payload;
+      let toIndex;
+      if (direction) {
+        if (fromIndex === 0) return state;
+        toIndex = fromIndex - 1;
+      } else {
+        if (fromIndex === state.keywordData.orderBy.length - 1) return state;
+        toIndex = fromIndex + 1;
+      }
+      const newOrderBy = [];
+      state.keywordData.orderBy.forEach((item, index) => {
+        if (index === fromIndex) {
+          newOrderBy[toIndex] = item;
+        } else if (index === toIndex) {
+          newOrderBy[fromIndex] = item;
+        } else {
+          newOrderBy.push(item);
+        }
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          orderBy: newOrderBy,
+        },
+      };
+    }
+
     default: {
       throw new Error('Unexpected action');
     }
