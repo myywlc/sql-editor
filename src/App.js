@@ -45,7 +45,7 @@ function App() {
       <TableList addTable={addTable} />
       <div className="center">
         <TableCard tableList={state.tableList} dispatch={dispatch} addTable={addTable} />
-        <TableHandle keywordData={state.keywordData} dispatch={dispatch} />
+        <TableHandle keywordData={state.keywordData} tableList={state.tableList} dispatch={dispatch} />
       </div>
       <RenderEditor keywordData={state.keywordData} />
     </div>
