@@ -343,6 +343,184 @@ const reducer = (state, action) => {
       };
     }
 
+    case 'addHavingFieldEquality': {
+      const { id } = payload;
+      const ids = id.split('-').map(it => Number(it));
+
+      let having = JSON.parse(JSON.stringify(state.keywordData.having));
+      let current = having;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          current[key] = {
+            id,
+            leftValue: '',
+            isLeftCustom: false,
+            operator: '=',
+            rightValue: '',
+            isRightCustom: false,
+            connectors: 'AND',
+          };
+        } else {
+          current = current[key].child;
+        }
+      });
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          having,
+        },
+      };
+    }
+
+    case 'removeHavingItem': {
+      const { id } = payload;
+      const ids = id.split('-').map(it => Number(it));
+
+      let having = JSON.parse(JSON.stringify(state.keywordData.having));
+      let current = having;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          current.splice(key, 1);
+        } else {
+          current = current[key].child;
+        }
+      });
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          having,
+        },
+      };
+    }
+
+    case 'addHavingBracket': {
+      const { id } = payload;
+      const ids = id.split('-').map(it => Number(it));
+
+      let having = JSON.parse(JSON.stringify(state.keywordData.having));
+      let current = having;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          current[key] = {
+            id,
+            isBracket: true,
+            child: [],
+            connectors: 'AND',
+          };
+        } else {
+          current = current[key].child;
+        }
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          having,
+        },
+      };
+    }
+
+    case 'changeHavingAndOr': {
+      const { id } = payload;
+      const ids = id.split('-').map(it => Number(it));
+
+      let having = JSON.parse(JSON.stringify(state.keywordData.having));
+      let current = having;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          const { connectors } = current[key];
+          if (connectors === 'AND') {
+            current[key].connectors = 'OR';
+          } else {
+            current[key].connectors = 'AND';
+          }
+        } else {
+          current = current[key].child;
+        }
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          having,
+        },
+      };
+    }
+
+    case 'changeHavingKeyValue': {
+      const { id, fieldKey, value } = payload;
+      const ids = id.split('-').map(it => Number(it));
+
+      let having = JSON.parse(JSON.stringify(state.keywordData.having));
+      let current = having;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          current[key][fieldKey] = value;
+        } else {
+          current = current[key].child;
+        }
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          having,
+        },
+      };
+    }
+
+    case 'up_or_down_having_field': {
+      const { id, direction } = payload;
+      const ids = id.split('-').map(it => Number(it));
+      let prefixIds = '';
+      ids.forEach((it, i) => {
+        const lastIndex = ids.length - 1;
+        if (lastIndex !== i) {
+          prefixIds = (prefixIds ? prefixIds + '-' : '') + it;
+        }
+      });
+      let having = JSON.parse(JSON.stringify(state.keywordData.having));
+      let current = having;
+      let toIndex;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          if (direction) {
+            if (key === 0) return;
+            toIndex = key - 1;
+          } else {
+            if (key === current.length - 1) return;
+            toIndex = key + 1;
+          }
+          const toItem = current[toIndex];
+          current[toIndex] = current[key];
+          current[toIndex].id = (prefixIds ? prefixIds + '-' : '') + toIndex;
+          current[key] = toItem;
+          current[key].id = (prefixIds ? prefixIds + '-' : '') + key;
+        } else {
+          current = current[key].child;
+        }
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          having,
+        },
+      };
+    }
+
     default: {
       throw new Error('Unexpected action');
     }

@@ -128,6 +128,33 @@ ${ids.map(() => '  ').join('')}) ${lastIndex === index ? '' : item.connectors}\n
     return whereString;
   };
 
+  const havingStringFn = (having) => {
+    let havingString = '';
+    if (having.length > 0) {
+      havingString = `
+HAVING
+`;
+      const string = (data, str) => {
+        data.forEach((item, index) => {
+          const lastIndex = data.length - 1;
+          const ids = item.id.split('-').map(it => Number(it));
+          if (item.isBracket) {
+            str = str + `\n${ids.map(() => '  ').join('')}(
+${string(item.child, '')}
+${ids.map(() => '  ').join('')}) ${lastIndex === index ? '' : item.connectors}\n`;
+          } else {
+            str = str + `${ids.map(it => '  ').join('')}${item.leftValue} ${operatorAndRightValue(item.operator, item.rightValue)} ${lastIndex === index ? '' : item.connectors}\n`;
+          }
+        });
+
+        return str;
+      };
+
+      havingString = string(having, havingString);
+    }
+    return havingString;
+  };
+
   const limitStringFn = (limit) => {
     let limitString = '';
     if (limit.limit) {
@@ -143,11 +170,12 @@ OFFSET ${limit.offset}`;
 
   const parseSql = (keywordData) => {
     const { select, from, where, groupBy, having, orderBy, limit, distinct } = keywordData;
-    let groupByString = '', havingString = '', orderByString = '';
+    let groupByString = '', orderByString = '';
 
     const selectString = selectStringFn(select, distinct);
     const fromString = fromStringFn(from);
     const whereString = whereStringFn(where);
+    const havingString = havingStringFn(having);
     const limitString = limitStringFn(limit);
 
     return selectString + fromString + whereString + groupByString + havingString + orderByString + limitString;
