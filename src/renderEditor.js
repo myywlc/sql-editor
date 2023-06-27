@@ -129,7 +129,7 @@ ${ids.map(() => '  ').join('')}) ${lastIndex === index ? '' : item.connectors}\n
   };
 
   const groupByStringFn = (groupBy) => {
-    let groupByString;
+    let groupByString = '';
     if (groupBy && groupBy.length > 0) {
       groupByString = `
 GROUP BY`;
@@ -166,7 +166,7 @@ ${ids.map(() => '  ').join('')}) ${lastIndex === index ? '' : item.connectors}\n
   };
 
   const orderByStringFn = (orderBy) => {
-    let orderByString;
+    let orderByString = '';
     if (orderBy && orderBy.length > 0) {
       orderByString = `
 ORDER BY`;
