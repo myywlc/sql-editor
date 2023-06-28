@@ -170,7 +170,7 @@ ${ids.map(() => '  ').join('')}) ${lastIndex === index ? '' : item.connectors}\n
     if (orderBy && orderBy.length > 0) {
       orderByString = `
 ORDER BY`;
-      orderByString = [orderByString, ...orderBy.map((it, i) => (it.isCustom ? it.value : ((it.tableAlias ? `"${it.tableAlias}"` : it.tableName) + '.' + it.field)) + ((orderBy.length - 1) !== i ? ',' : ''))].join('\n  ');
+      orderByString = [orderByString, ...orderBy.map((it, i) => (it.isCustom ? it.value : ((it.tableAlias ? `"${it.tableAlias}"` : it.tableName) + '.' + it.field)) + `${it.order ? it.order === 'Ascending' ? ' ASC' : ' DESC' : ''}` + ((orderBy.length - 1) !== i ? ',' : ''))].join('\n  ');
     }
     return orderByString;
   };

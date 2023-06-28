@@ -942,7 +942,8 @@ function GroupByHandle({ groupBy, from, tableList, dispatch }) {
             if (it.isCustom) {
               return (
                 <div key={i} className="selectHover">
-                  <PopoverSelectGroupBy selectData={selectData} dispatch={dispatch} isCustom={false} index={i + ''}>
+                  <PopoverSelectGroupBy selectData={selectData} dispatch={dispatch} isCustom={true}
+                                        value={it.value} index={i + ''}>
                     Expression: <a>{`${it.value}`}</a>
                   </PopoverSelectGroupBy>
                   {(lastIndex === i) && (
@@ -1665,7 +1666,7 @@ function HavingHandle({ having, from, tableList, dispatch }) {
   );
 }
 
-const PopoverSelectOrderBy = ({ selectData, dispatch, value = '', isCustom, index, children }) => {
+const PopoverSelectOrderBy = ({ selectData, dispatch, value = '', isCustom, index, order, children }) => {
   const [open, setOpen] = useState(false);
 
   const handleOpenChange = (newOpen) => {
@@ -1681,6 +1682,7 @@ const PopoverSelectOrderBy = ({ selectData, dispatch, value = '', isCustom, inde
           tableName: data.tableName,
           tableAlias: data.tableAlias,
           field: data.title,
+          order,
           isCustom: false,
         },
       });
@@ -1691,6 +1693,7 @@ const PopoverSelectOrderBy = ({ selectData, dispatch, value = '', isCustom, inde
           tableName: data.tableName,
           tableAlias: data.tableAlias,
           field: data.title,
+          order: '',
           isCustom: false,
         },
       });
@@ -1705,6 +1708,7 @@ const PopoverSelectOrderBy = ({ selectData, dispatch, value = '', isCustom, inde
         payload: {
           index: Number(index),
           value: data,
+          order,
           isCustom: true,
         },
       });
@@ -1713,6 +1717,7 @@ const PopoverSelectOrderBy = ({ selectData, dispatch, value = '', isCustom, inde
         type: 'add_orderBy',
         payload: {
           value: data,
+          order: '',
           isCustom: true,
         },
       });
@@ -1777,6 +1782,19 @@ function OrderByHandle({ orderBy, from, tableList, dispatch }) {
     return data;
   }, [from, tableList]);
 
+  const handleChangeOrder = (data, index) => {
+    const { order } = data;
+    const newOrder = !order ? 'Ascending' : order === 'Ascending' ? 'Descending' : '';
+    dispatch({
+      type: 'change_orderBy',
+      payload: {
+        ...data,
+        index: Number(index),
+        order: newOrder,
+      },
+    });
+  };
+
   const lastIndex = orderBy.length - 1;
   return (
     <div style={{ maxHeight: 318, overflowY: 'auto' }}>
@@ -1793,9 +1811,12 @@ function OrderByHandle({ orderBy, from, tableList, dispatch }) {
             if (it.isCustom) {
               return (
                 <div key={i} className="selectHover">
-                  <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={false} index={i + ''}>
+                  <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={true}
+                                        value={it.value} index={i + ''} order={it.order}>
                     Expression: <a>{`${it.value}`}</a>
                   </PopoverSelectOrderBy>
+                  <a onClick={() => handleChangeOrder(it, i)}>{it.order ? <span style={{ marginLeft: 6 }}>{it.order}</span> :
+                    <span style={{ color: '#c0c0c0', marginLeft: 6 }}>{'<order>'}</span>}</a>
                   {(lastIndex === i) && (
                     <a style={{ marginLeft: 6 }}>
                       <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={false}>
@@ -1861,9 +1882,11 @@ function OrderByHandle({ orderBy, from, tableList, dispatch }) {
               return (
                 <div key={i} className="selectHover">
                   <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={false}
-                                        index={i + ''}>
+                                        index={i + ''} order={it.order}>
                     <a>{`${it.tableAlias || it.tableName}.${it.field}`}</a>
                   </PopoverSelectOrderBy>
+                  <a onClick={() => handleChangeOrder(it, i)}>{it.order ? <span style={{ marginLeft: 6 }}>{it.order}</span> :
+                    <span style={{ color: '#c0c0c0', marginLeft: 6 }}>{'<order>'}</span>}</a>
                   {(lastIndex === i) && (
                     <a style={{ marginLeft: 6 }}>
                       <PopoverSelectOrderBy selectData={selectData} dispatch={dispatch} isCustom={false}>
