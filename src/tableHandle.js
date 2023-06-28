@@ -24,7 +24,7 @@ const Identifier = ({ handleSelect, selectData }) => {
 const Custom = ({ isCustom, value, handleCustom }) => {
   return (
     <TextArea rows={10} defaultValue={isCustom ? value : ''}
-              onPressEnter={(e) => handleCustom(e.target.value)} />
+              onChange={(e) => handleCustom(e.target.value)} />
   );
 };
 
@@ -178,7 +178,7 @@ const PopoverList = ({ dispatch, target, value, children }) => {
       destroyTooltipOnHide
       content={(
         <TextArea placeholder="请输入以,分隔" rows={6} defaultValue={value}
-                  onPressEnter={(e) => handleList(e.target.value)} />
+                  onChange={(e) => handleList(e.target.value)} />
       )}
       trigger="click"
       open={open}
@@ -295,7 +295,7 @@ function SelectHandle({ select, distinct, dispatch }) {
                         <Input
                           placeholder="请输入别名"
                           bordered={false}
-                          onPressEnter={(e) => handleClickFieldAlias(it.tableName, it.field, e)}
+                          onChange={(e) => handleClickFieldAlias(it.tableName, it.field, e)}
                         />
                       )}>
                       <span style={{ color: '#c0c0c0' }}>{'<alias>'}</span>
@@ -306,7 +306,7 @@ function SelectHandle({ select, distinct, dispatch }) {
                         <Input
                           placeholder="请输入别名"
                           bordered={false}
-                          onPressEnter={(e) => handleClickFieldAlias(it.tableName, it.field, e)}
+                          onChange={(e) => handleClickFieldAlias(it.tableName, it.field, e)}
                           defaultValue={it.fieldAlias}
                         />
                       )}>
@@ -421,7 +421,7 @@ function FromHandle({ from, dispatch }) {
                       <Input
                         placeholder="请输入别名"
                         bordered={false}
-                        onPressEnter={(e) => handleClickTableAlias(it.name, e)}
+                        onChange={(e) => handleClickTableAlias(it.name, e)}
                       />
                     )}>
                     <span style={{ color: '#c0c0c0' }}>{'<alias>'}</span>
@@ -432,7 +432,7 @@ function FromHandle({ from, dispatch }) {
                       <Input
                         placeholder="请输入别名"
                         bordered={false}
-                        onPressEnter={(e) => handleClickTableAlias(it.name, e)}
+                        onChange={(e) => handleClickTableAlias(it.name, e)}
                         defaultValue={it.alias}
                       />
                     )}>
@@ -1233,7 +1233,7 @@ const PopoverListHaving = ({ dispatch, target, value, children }) => {
       destroyTooltipOnHide
       content={(
         <TextArea placeholder="请输入以,分隔" rows={6} defaultValue={value}
-                  onPressEnter={(e) => handleList(e.target.value)} />
+                  onChange={(e) => handleList(e.target.value)} />
       )}
       trigger="click"
       open={open}
@@ -1815,7 +1815,8 @@ function OrderByHandle({ orderBy, from, tableList, dispatch }) {
                                         value={it.value} index={i + ''} order={it.order}>
                     Expression: <a>{`${it.value}`}</a>
                   </PopoverSelectOrderBy>
-                  <a onClick={() => handleChangeOrder(it, i)}>{it.order ? <span style={{ marginLeft: 6 }}>{it.order}</span> :
+                  <a onClick={() => handleChangeOrder(it, i)}>{it.order ?
+                    <span style={{ marginLeft: 6 }}>{it.order}</span> :
                     <span style={{ color: '#c0c0c0', marginLeft: 6 }}>{'<order>'}</span>}</a>
                   {(lastIndex === i) && (
                     <a style={{ marginLeft: 6 }}>
@@ -1885,7 +1886,8 @@ function OrderByHandle({ orderBy, from, tableList, dispatch }) {
                                         index={i + ''} order={it.order}>
                     <a>{`${it.tableAlias || it.tableName}.${it.field}`}</a>
                   </PopoverSelectOrderBy>
-                  <a onClick={() => handleChangeOrder(it, i)}>{it.order ? <span style={{ marginLeft: 6 }}>{it.order}</span> :
+                  <a onClick={() => handleChangeOrder(it, i)}>{it.order ?
+                    <span style={{ marginLeft: 6 }}>{it.order}</span> :
                     <span style={{ color: '#c0c0c0', marginLeft: 6 }}>{'<order>'}</span>}</a>
                   {(lastIndex === i) && (
                     <a style={{ marginLeft: 6 }}>
@@ -1976,7 +1978,7 @@ function LimitHandle({ limit, dispatch }) {
               min={0}
               placeholder="请输入"
               bordered={false}
-              onPressEnter={(e) => handleChangeLimit('limit', e)}
+              onChange={(e) => handleChangeLimit('limit', e)}
               defaultValue={limit?.limit ?? ''}
             />
           )}>
@@ -1990,7 +1992,7 @@ function LimitHandle({ limit, dispatch }) {
               min={0}
               placeholder="请输入"
               bordered={false}
-              onPressEnter={(e) => handleChangeLimit('offset', e)}
+              onChange={(e) => handleChangeLimit('offset', e)}
               defaultValue={limit?.offset ?? ''}
             />
           )}>
