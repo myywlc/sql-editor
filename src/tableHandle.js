@@ -2524,12 +2524,12 @@ function OrderByHandle({ orderBy, from, tableList, dispatch }) {
 }
 
 function LimitHandle({ limit, dispatch }) {
-  const handleChangeLimit = (limitType, e) => {
+  const handleChangeLimit = (limitType, value) => {
     dispatch({
       type: 'limitChange',
       payload: {
         limitType,
-        value: e.target.value,
+        value,
       },
     });
   };
@@ -2543,7 +2543,7 @@ function LimitHandle({ limit, dispatch }) {
               min={0}
               placeholder="请输入"
               bordered={false}
-              onChange={(e) => handleChangeLimit('limit', e)}
+              onChange={(value) => handleChangeLimit('limit', value)}
               defaultValue={limit?.limit ?? ''}
             />
           )}>
@@ -2557,7 +2557,7 @@ function LimitHandle({ limit, dispatch }) {
               min={0}
               placeholder="请输入"
               bordered={false}
-              onChange={(e) => handleChangeLimit('offset', e)}
+              onChange={(value) => handleChangeLimit('offset', value)}
               defaultValue={limit?.offset ?? ''}
             />
           )}>
