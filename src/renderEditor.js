@@ -76,7 +76,7 @@ FROM
 ${string(item.child, '')}
 ${kg})\n`, item.condition, kg);
           } else {
-            str = str + `${index !== 0 ? operatorValue(item.operator, item.name, item.condition, kg) : kg + item.name}\n`;
+            str = str + `${index !== 0 ? operatorValue(item.operator, (item.name + (item.alias ? ` AS "${item.alias}"` : '')), item.condition, kg) : kg + (item.name + (item.alias ? ` AS "${item.alias}"` : ''))}\n`;
           }
         });
         return str;
