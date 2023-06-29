@@ -1,4 +1,4 @@
-import { Checkbox, Input, List, Popover, Tabs, Tree } from 'antd';
+import { Checkbox, Input, InputNumber, List, Popover, Tabs, Tree } from 'antd';
 import { ArrowDownOutlined, ArrowUpOutlined, FileAddOutlined } from '@ant-design/icons';
 import { useEffect, useMemo, useState } from 'react';
 
