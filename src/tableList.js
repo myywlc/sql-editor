@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { List } from 'antd';
 import { TableOutlined } from '@ant-design/icons';
 import { useDrag } from 'ahooks';
@@ -18,12 +18,13 @@ function ListItem({ addTable, item }) {
   );
 }
 
-function TableList({ addTable }) {
-  const [data, setData] = useState([]);
-
+function TableList({ allTableList, addTable, dispatch }) {
   useEffect(() => {
     fetch('http://localhost:3001/list').then(res => res.json()).then(res => {
-      setData(res.data);
+      dispatch({
+        type: 'init_table',
+        payload: res.data,
+      });
     });
   }, []);
 
@@ -31,7 +32,7 @@ function TableList({ addTable }) {
     <div className="left">
       <List
         itemLayout="horizontal"
-        dataSource={data}
+        dataSource={allTableList}
         renderItem={(item) => (
           <ListItem item={item} addTable={addTable} />
         )}

@@ -1,4 +1,4 @@
-import { Checkbox, Input, InputNumber, List, Popover, Tabs, Tree } from 'antd';
+import { Checkbox, Input, List, Popover, Tabs, Tree } from 'antd';
 import { ArrowDownOutlined, ArrowUpOutlined, FileAddOutlined } from '@ant-design/icons';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -24,7 +24,7 @@ const Identifier = ({ handleSelect, selectData }) => {
 const Custom = ({ isCustom, value, handleCustom }) => {
   return (
     <TextArea rows={10} defaultValue={isCustom ? value : ''}
-              onChange={(e) => handleCustom(e.target.value)} />
+              onPressEnter={(e) => handleCustom(e.target.value)} />
   );
 };
 
@@ -178,7 +178,7 @@ const PopoverList = ({ dispatch, target, value, children }) => {
       destroyTooltipOnHide
       content={(
         <TextArea placeholder="请输入以,分隔" rows={6} defaultValue={value}
-                  onChange={(e) => handleList(e.target.value)} />
+                  onPressEnter={(e) => handleList(e.target.value)} />
       )}
       trigger="click"
       open={open}
@@ -265,7 +265,119 @@ const PopoverOperator = ({ target, dispatch, children }) => {
   );
 };
 
-function SelectHandle({ select, distinct, dispatch }) {
+const PopoverSelectSec = ({ selectData, dispatch, target, isCustom, value, children }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (newOpen) => {
+    setOpen(newOpen);
+  };
+
+  const handleSelect = (data) => {
+    if (!target) {
+      dispatch({
+        type: 'add_edit_table_field',
+        payload: {
+          tableName: data.tableName,
+          tableNameAlias: data.tableNameAlias,
+          field: data.title,
+          checked: true,
+        },
+      });
+    } else {
+      dispatch({
+        type: 'add_edit_table_field',
+        payload: {
+          id: target,
+          tableName: data.tableName,
+          tableNameAlias: data.tableNameAlias,
+          field: data.title,
+          checked: true,
+        },
+      });
+    }
+
+    setOpen(false);
+  };
+
+  const handleCustom = (data) => {
+    if (!target) {
+      dispatch({
+        type: 'add_edit_table_field',
+        payload: { value: data, isCustom: true },
+      });
+    } else {
+      dispatch({
+        type: 'add_edit_table_field',
+        payload: { id: target, value: data, isCustom: true },
+      });
+    }
+    setOpen(false);
+  };
+
+  const renderContent = () => {
+    const items = [
+      {
+        key: '1',
+        label: `Identifier`,
+        children: <Identifier selectData={selectData} handleSelect={handleSelect} />,
+      },
+      {
+        key: '2',
+        label: `Custom`,
+        children: <Custom isCustom={isCustom} value={value} handleCustom={handleCustom} />,
+      },
+    ];
+
+    return (
+      <div style={{ width: 240, height: 300, overflow: 'auto' }}>
+        <Tabs size="small" centered defaultActiveKey={isCustom ? '2' : '1'} items={items} />
+      </div>
+    );
+  };
+
+  return (
+    <Popover
+      destroyTooltipOnHide
+      content={renderContent}
+      trigger="click"
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
+      {children}
+    </Popover>
+  );
+};
+
+function SelectHandle({ select, from, tableList, distinct, dispatch }) {
+  const selectData = useMemo(() => {
+    const data = [
+      {
+        'title': '*',
+        'key': '0-0',
+        'isLeaf': true,
+        'tableName': '',
+        'tableNameAlias': '',
+      },
+    ];
+    from.forEach((item, index) => {
+      const { name, alias } = item;
+      const fItem = tableList.find(item => item.tableName === name);
+      if (!fItem) return;
+      data.push({
+        title: fItem.tableName + (alias ? `(${alias})` : ''),
+        key: `0-${index + 1}`,
+        children: fItem.data.map((it, i) => ({
+          title: it.name,
+          key: `0-${index + 1}-${i}`,
+          isLeaf: true,
+          tableName: name,
+          tableNameAlias: alias,
+        })),
+      });
+    });
+    return data;
+  }, [from, tableList]);
+
   const handleClickFieldAlias = (tableName, field, e) => {
     dispatch({
       type: 'fieldAliasChange',
@@ -283,12 +395,24 @@ function SelectHandle({ select, distinct, dispatch }) {
       <div style={{ maxHeight: 318, overflowY: 'auto' }}>
         {
           (select.length === 0) ? (
-            <a><FileAddOutlined /> <span style={{ color: '#0000006e' }}>添加字段</span></a>
+            <PopoverSelectSec selectData={selectData} dispatch={dispatch} isCustom={false} value={''}>
+              <a><FileAddOutlined /> <span style={{ color: '#0000006e' }}>添加</span></a>
+            </PopoverSelectSec>
           ) : (
             select.map((it, i) => {
               return (
                 <div key={i} className="selectHover">
-                  {`${it.tableNameAlias || it.tableName}.${it.field}`} {
+                  {it.isCustom ? (
+                    <PopoverSelectSec selectData={selectData} dispatch={dispatch} isCustom={true}
+                                      target={i + ''} value={it.value}>
+                      Expression: {it.value || <span style={{ color: '#c0c0c0' }}>{'<value>'}</span>}
+                    </PopoverSelectSec>
+                  ) : (
+                    <PopoverSelectSec selectData={selectData} dispatch={dispatch} isCustom={false}
+                                      target={i + ''}>
+                      {(it.tableNameAlias || it.tableName) ? (it.tableNameAlias || it.tableName) + '.' : ''}{it.field ? it.field : ''}
+                    </PopoverSelectSec>
+                  )} {
                   !it.fieldAlias ? (
                     <Popover
                       content={(
@@ -314,7 +438,11 @@ function SelectHandle({ select, distinct, dispatch }) {
                     </Popover>
                   )
                 }
-                  {(lastIndex === i) && <a style={{ marginLeft: 6 }}><FileAddOutlined /></a>}
+                  {(lastIndex === i) && (
+                    <PopoverSelectSec selectData={selectData} dispatch={dispatch} isCustom={false} value={''}>
+                      <a style={{ marginLeft: 6 }}><FileAddOutlined /></a>
+                    </PopoverSelectSec>
+                  )}
                   <a
                     className="selectHoverA"
                     style={{
@@ -393,75 +521,511 @@ function SelectHandle({ select, distinct, dispatch }) {
   );
 }
 
-function FromHandle({ from, dispatch }) {
-  const handleClickTableAlias = (tableName, e) => {
+const PopoverSelectFrom = ({
+                             addTable,
+                             selectData,
+                             target,
+                             fieldKey,
+                             dispatch,
+                             isCustom,
+                             value,
+                             children,
+                           }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (newOpen) => {
+    setOpen(newOpen);
+  };
+
+  const addTableCard = (table) => {
+    fetch('http://localhost:3001/' + table.tableName).then(res => res.json()).then(res => {
+      const data = [{ name: '*', comment: '*' }, ...res.data];
+      dispatch({ type: 'add_table_from', payload: { tableName: table.tableName, data } });
+    });
+  };
+
+  const handleSelect = (data) => {
+    if (!fieldKey) {
+      if (addTable) {
+        addTable({ tableName: data.title });
+      } else {
+        addTableCard({ tableName: data.title });
+        dispatch({
+          type: 'addFromFieldEquality',
+          payload: {
+            id: target,
+            name: data.title,
+            alias: '',
+            isCustom: false,
+          },
+        });
+      }
+    } else {
+      dispatch({
+        type: 'changeFromKeyValue',
+        payload: {
+          id: target,
+          fieldKey,
+          value: data.title,
+        },
+      });
+      dispatch({
+        type: 'changeFromKeyValue',
+        payload: {
+          id: target,
+          fieldKey: 'isCustom',
+          value: false,
+        },
+      });
+    }
+    setOpen(false);
+  };
+
+  const handleCustom = (data) => {
+    if (!fieldKey) {
+      dispatch({
+        type: 'addFromFieldEquality',
+        payload: {
+          id: target,
+          name: data,
+          alias: '',
+          isCustom: true,
+        },
+      });
+    } else {
+      dispatch({
+        type: 'changeFromKeyValue',
+        payload: {
+          id: target,
+          fieldKey,
+          value: data,
+        },
+      });
+      dispatch({
+        type: 'changeFromKeyValue',
+        payload: {
+          id: target,
+          fieldKey: 'isCustom',
+          value: true,
+        },
+      });
+    }
+    setOpen(false);
+  };
+
+  const renderContent = () => {
+    const items = [
+      {
+        key: '1',
+        label: `Identifier`,
+        children: <Identifier selectData={selectData} handleSelect={handleSelect} />,
+      },
+      {
+        key: '2',
+        label: `Expression/Subquery`,
+        children: <Custom isCustom={isCustom} value={value} handleCustom={handleCustom} />,
+      },
+    ];
+
+    return (
+      <div style={{ width: 240, height: 300, overflow: 'auto' }}>
+        <Tabs size="small" centered defaultActiveKey={isCustom ? '2' : '1'} items={items} />
+      </div>
+    );
+  };
+
+  return (
+    <Popover
+      destroyTooltipOnHide
+      content={renderContent}
+      trigger="click"
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
+      {children}
+    </Popover>
+  );
+};
+
+const PopoverRelationshipFrom = ({ target, dispatch, children }) => {
+  const [open, setOpen] = useState(false);
+  const [custom, setCustom] = useState('');
+
+
+  const handleOpenChange = (newOpen) => {
+    setOpen(newOpen);
+  };
+
+  const handleSelect = (value) => {
+    if (value === 'Custom' && !custom) {
+      message.warning('请输入custom!');
+      return;
+    }
     dispatch({
-      type: 'tableAliasChange',
+      type: 'changeFromKeyValue',
       payload: {
-        tableName,
+        id: target,
+        fieldKey: 'operator',
+        value: value === 'Custom' ? custom : value,
+      },
+    });
+    setOpen(false);
+  };
+
+  const operatorList = [
+    'INNER JOIN',
+    'LEFT JOIN',
+    'RIGHT JOIN',
+    'CROSS JOIN',
+    'FULL OUTER JOIN',
+    ',',
+    'Custom',
+  ];
+
+  return (
+    <Popover
+      destroyTooltipOnHide
+      content={(
+        <div style={{ width: 200, height: 300, overflow: 'auto' }}>
+          <List
+            size="small"
+            dataSource={operatorList}
+            renderItem={(item) => <List.Item
+              onClick={() => handleSelect(item)}><a>{item}</a>{item === 'Custom' && (
+              <Input style={{ marginLeft: 6 }} size="small" value={custom}
+                     onChange={e => setCustom(e.target.value)} />
+            )}</List.Item>}
+          />
+        </div>
+      )}
+      trigger="click"
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
+      {children}
+    </Popover>
+  );
+};
+
+const PopoverCondition = ({ dispatch, target, value, children }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (newOpen) => {
+    setOpen(newOpen);
+  };
+
+  const handleList = (data) => {
+    dispatch({
+      type: 'changeFromKeyValue',
+      payload: {
+        id: target,
+        fieldKey: 'condition',
+        value: data,
+      },
+    });
+
+    setOpen(false);
+  };
+
+  return (
+    <Popover
+      destroyTooltipOnHide
+      content={(
+        <TextArea style={{ width: 300 }} placeholder="请输入condition" rows={6} defaultValue={value}
+                  onPressEnter={(e) => handleList(e.target.value)} />
+      )}
+      trigger="click"
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
+      {children}
+    </Popover>
+  );
+};
+
+function FromHandle({ addTable, from, allTableList, dispatch }) {
+  const selectData = useMemo(() => {
+    const data = [];
+    allTableList.forEach((item, index) => {
+      const { tableName } = item;
+      data.push({
+        title: tableName,
+        key: `0-${index}`,
+      });
+    });
+    return data;
+  }, [from, allTableList]);
+
+  const handleRemoveItem = (id, isTable, tableName) => {
+    dispatch({
+      type: 'removeFromItem',
+      payload: { id, isTable, tableName },
+    });
+  };
+
+  const handleAddBracket = (id) => {
+    dispatch({
+      type: 'addFromBracket',
+      payload: { id },
+    });
+  };
+
+  const handleClickTableAlias = (id, e) => {
+    dispatch({
+      type: 'changeFromKeyValue',
+      payload: {
+        id,
+        fieldKey: 'alias',
         value: e.target.value,
       },
     });
   };
 
-  const lastIndex = from.length - 1;
+  const handleClickTableOperator = (id, value) => {
+    dispatch({
+      type: 'changeFromKeyValue',
+      payload: {
+        id,
+        fieldKey: 'operator',
+        value,
+      },
+    });
+  };
+
+  const renderTree = (data, k = '') => {
+    const lastIndex = data.length - 1;
+    const length = k.split('-').map(it => Number(it)).length;
+
+    return (
+      <>
+        {
+          data.map((it, i) => {
+            return (
+              <div key={i}>
+                {i !== 0 && (
+                  <div className="selectHover">
+                    <PopoverRelationshipFrom target={it.id} dispatch={dispatch}>
+                      <a>{it.operator}</a>
+                    </PopoverRelationshipFrom>
+                    {
+                      !['CROSS JOIN', ','].includes(it.operator) && (
+                        <PopoverCondition target={it.id} dispatch={dispatch} value={it.condition}>
+                          {it.condition ?
+                            <span style={{ marginLeft: 6 }}>[{it.condition}]</span> : (
+                              <span style={{
+                                color: '#c0c0c0',
+                                cursor: 'pointer',
+                                marginLeft: 6,
+                              }}>{'<Add Condition>'}</span>
+                            )}
+                        </PopoverCondition>
+                      )
+                    }
+                    <a
+                      className="selectHoverA"
+                      style={{
+                        color: '#fff',
+                        backgroundColor: '#b2b2b2',
+                        fontSize: 12,
+                        padding: '0 5px',
+                        marginLeft: 12,
+                      }}
+                      onClick={() => handleClickTableOperator(it.id, ',')}
+                    >
+                      X
+                    </a>
+                  </div>
+                )}
+
+                {
+                  it.isBracket ? (
+                    <div className="selectHover">
+                      <div style={{ marginLeft: 6 * length }}>
+                        {it.child.length > 0 ? (
+                          <>
+                            <div>(</div>
+                            <div style={{ marginLeft: 6 }}>{renderTree(it.child, it.id)}</div>
+                            <div>) {
+                              lastIndex === i && (
+                                <>
+                                  <PopoverSelectFrom
+                                    selectData={selectData}
+                                    dispatch={dispatch}
+                                    target={`${k ? (k + '-') : ''}${i + 1}`}
+                                    isCustom={false}
+                                  >
+                                    <a style={{ marginLeft: 6, marginRight: 6 }}><FileAddOutlined /></a>
+                                  </PopoverSelectFrom>
+                                  <span style={{ color: '#1577ff', marginRight: 6, cursor: 'pointer' }}
+                                        onClick={() => handleAddBracket(`${k ? (k + '-') : ''}${i + 1}`)}>()</span>
+                                </>
+                              )
+                            }
+                              <a
+                                className="selectHoverA"
+                                style={{
+                                  color: '#fff',
+                                  backgroundColor: '#b2b2b2',
+                                  fontSize: 12,
+                                  padding: '0 5px',
+                                  marginLeft: 6,
+                                }}
+                                onClick={() => handleRemoveItem(it.id, !it.isCustom && !it.isBracket, it.name)}
+                              >
+                                X
+                              </a>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>(</div>
+                            <PopoverSelectFrom
+                              selectData={selectData}
+                              dispatch={dispatch}
+                              target={`${it.id + '-'}${0}`}
+                              isCustom={false}
+                            >
+                              <a style={{ marginLeft: 6, marginRight: 6 }}><FileAddOutlined /></a>
+                            </PopoverSelectFrom>
+                            <span style={{ color: '#1577ff', marginRight: 6, cursor: 'pointer' }}
+                                  onClick={() => handleAddBracket(`${it.id + '-'}${0}`)}>()</span>
+                            <div>) {
+                              lastIndex === i && (
+                                <>
+                                  <PopoverSelectFrom
+                                    selectData={selectData}
+                                    dispatch={dispatch}
+                                    target={`${k ? (k + '-') : ''}${i + 1}`}
+                                    isCustom={false}
+                                  >
+                                    <a style={{ marginLeft: 6, marginRight: 6 }}><FileAddOutlined /></a>
+                                  </PopoverSelectFrom>
+                                  <span style={{ color: '#1577ff', marginRight: 6, cursor: 'pointer' }}
+                                        onClick={() => handleAddBracket(`${k ? (k + '-') : ''}${i + 1}`)}>()</span>
+                                </>
+                              )
+                            }
+                              <a
+                                className="selectHoverA"
+                                style={{
+                                  color: '#fff',
+                                  backgroundColor: '#b2b2b2',
+                                  fontSize: 12,
+                                  padding: '0 5px',
+                                  marginLeft: 6,
+                                }}
+                                onClick={() => handleRemoveItem(it.id, !it.isCustom && !it.isBracket, it.name)}
+                              >
+                                X
+                              </a>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="selectHover">
+                      <PopoverSelectFrom
+                        selectData={selectData}
+                        dispatch={dispatch}
+                        target={it.id}
+                        fieldKey={'name'}
+                        isCustom={it.isCustom}
+                        value={it.name}
+                      >
+                    <span className={'fontOverflow'}
+                          style={{
+                            marginRight: 6,
+                            cursor: 'pointer',
+                          }}>{it.isCustom && 'Expression: '}{it.name}</span>
+                      </PopoverSelectFrom>
+                      {
+                        !it.alias ? (
+                          <Popover
+                            content={(
+                              <Input
+                                placeholder="请输入别名"
+                                bordered={false}
+                                onChange={(e) => handleClickTableAlias(it.id, e)}
+                              />
+                            )}>
+                            <span style={{ color: '#c0c0c0', cursor: 'pointer' }}>{'<alias>'}</span>
+                          </Popover>
+                        ) : (
+                          <Popover
+                            content={(
+                              <Input
+                                placeholder="请输入别名"
+                                bordered={false}
+                                onChange={(e) => handleClickTableAlias(it.id, e)}
+                                defaultValue={it.alias}
+                              />
+                            )}>
+                            <span style={{ cursor: 'pointer' }}>({it.alias})</span>
+                          </Popover>
+                        )
+                      }
+                      {
+                        lastIndex === i && (
+                          <>
+                            <PopoverSelectFrom
+                              selectData={selectData}
+                              dispatch={dispatch}
+                              target={`${k ? (k + '-') : ''}${i + 1}`}
+                              isCustom={false}
+                            >
+                              <a style={{ marginLeft: 6, marginRight: 6 }}><FileAddOutlined /></a>
+                            </PopoverSelectFrom>
+                            <span style={{ color: '#1577ff', marginRight: 6, cursor: 'pointer' }}
+                                  onClick={() => handleAddBracket(`${k ? (k + '-') : ''}${i + 1}`)}>()</span>
+                          </>
+                        )
+                      }
+                      <a
+                        className="selectHoverA"
+                        style={{
+                          color: '#fff',
+                          backgroundColor: '#b2b2b2',
+                          fontSize: 12,
+                          padding: '0 5px',
+                          marginLeft: 6,
+                        }}
+                        onClick={() => handleRemoveItem(`${k ? (k + '-') : ''}${i}`, !it.isCustom && !it.isBracket, it.name)}
+                      >
+                        X
+                      </a>
+                    </div>
+                  )
+                }
+              </div>
+            );
+          })
+        }
+      </>
+    );
+  };
+
   return (
     <div style={{ maxHeight: 318, overflowY: 'auto' }}>
       {
         (from.length === 0) ? (
-          <a><FileAddOutlined /> <span style={{ color: '#0000006e' }}>添加表</span></a>
+          <a>
+            <PopoverSelectFrom
+              addTable={addTable}
+              selectData={selectData}
+              dispatch={dispatch}
+              isCustom={false}
+              target={'0'}
+              value={''}
+            >
+              <FileAddOutlined style={{ marginRight: 6 }} />
+            </PopoverSelectFrom>
+            <span style={{ color: '#1577ff', marginRight: 6, cursor: 'pointer' }}
+                  onClick={() => handleAddBracket('0')}>()</span>
+            <span style={{ color: '#0000006e' }}>添加</span>
+          </a>
         ) : (
-          from.map((it, i) => {
-            return (
-              <div key={i} className="selectHover">
-                {`${it.name}`} {
-                !it.alias ? (
-                  <Popover
-                    content={(
-                      <Input
-                        placeholder="请输入别名"
-                        bordered={false}
-                        onChange={(e) => handleClickTableAlias(it.name, e)}
-                      />
-                    )}>
-                    <span style={{ color: '#c0c0c0' }}>{'<alias>'}</span>
-                  </Popover>
-                ) : (
-                  <Popover
-                    content={(
-                      <Input
-                        placeholder="请输入别名"
-                        bordered={false}
-                        onChange={(e) => handleClickTableAlias(it.name, e)}
-                        defaultValue={it.alias}
-                      />
-                    )}>
-                    <span>({it.alias})</span>
-                  </Popover>
-                )
-              }
-                {(lastIndex === i) && <a style={{ marginLeft: 6 }}><FileAddOutlined /></a>}
-                <a
-                  className="selectHoverA"
-                  style={{
-                    color: '#fff',
-                    backgroundColor: '#b2b2b2',
-                    fontSize: 12,
-                    padding: '0 5px',
-                    marginLeft: 6,
-                  }}
-                  onClick={() => dispatch({
-                    type: 'remove_table',
-                    payload: {
-                      tableName: it.name,
-                    },
-                  })}
-                >
-                  X
-                </a>
-              </div>
-            );
-          })
+          renderTree(from)
         )
       }
     </div>
@@ -475,6 +1039,7 @@ function WhereHandle({ where, from, tableList, dispatch }) {
     from.forEach((item, index) => {
       const { name, alias } = item;
       const fItem = tableList.find(item => item.tableName === name);
+      if (!fItem) return;
       data.push({
         title: fItem.tableName + (alias ? `(${alias})` : ''),
         key: `0-${index}`,
@@ -1233,7 +1798,7 @@ const PopoverListHaving = ({ dispatch, target, value, children }) => {
       destroyTooltipOnHide
       content={(
         <TextArea placeholder="请输入以,分隔" rows={6} defaultValue={value}
-                  onChange={(e) => handleList(e.target.value)} />
+                  onPressEnter={(e) => handleList(e.target.value)} />
       )}
       trigger="click"
       open={open}
@@ -2003,19 +2568,21 @@ function LimitHandle({ limit, dispatch }) {
   );
 }
 
-function TableHandle({ keywordData = {}, tableList = [], dispatch }) {
+function TableHandle({ addTable, keywordData = {}, tableList = [], allTableList, dispatch }) {
   const items = [
     {
       key: '1',
       label: 'SELECT',
       children: (
-        <SelectHandle select={keywordData.select} distinct={keywordData.distinct} dispatch={dispatch} />
+        <SelectHandle select={keywordData.select} distinct={keywordData.distinct} from={keywordData.from}
+                      tableList={tableList} dispatch={dispatch} />
       ),
     },
     {
       key: '2',
       label: 'FROM',
-      children: <FromHandle from={keywordData.from} dispatch={dispatch} />,
+      children: <FromHandle addTable={addTable} from={keywordData.from} allTableList={allTableList}
+                            dispatch={dispatch} />,
     },
     {
       key: '3',

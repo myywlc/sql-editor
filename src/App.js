@@ -9,6 +9,7 @@ import './App.css';
 function App() {
   const [state, dispatch] = useReducer(reducer, {
     tableList: [],
+    allTableList: [],
     keywordData: {
       select: [],
       from: [],
@@ -32,8 +33,8 @@ function App() {
   // }, [])
 
   const addTable = (table) => {
-    const find = state.tableList.find(it => it.tableName === table.tableName);
-    if (find) return;
+    // const find = state.tableList.find(it => it.tableName === table.tableName);
+    // if (find) return;
     fetch('http://localhost:3001/' + table.tableName).then(res => res.json()).then(res => {
       const data = [{ name: '*', comment: '*' }, ...res.data];
       dispatch({ type: 'add_table', payload: { tableName: table.tableName, data } });
@@ -42,10 +43,11 @@ function App() {
 
   return (
     <div className="app">
-      <TableList addTable={addTable} />
+      <TableList addTable={addTable} allTableList={state.allTableList} dispatch={dispatch} />
       <div className="center">
         <TableCard tableList={state.tableList} dispatch={dispatch} addTable={addTable} />
-        <TableHandle keywordData={state.keywordData} tableList={state.tableList} dispatch={dispatch} />
+        <TableHandle addTable={addTable} keywordData={state.keywordData} allTableList={state.allTableList}
+                     tableList={state.tableList} dispatch={dispatch} />
       </div>
       <RenderEditor keywordData={state.keywordData} />
     </div>

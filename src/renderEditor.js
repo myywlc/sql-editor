@@ -14,18 +14,78 @@ SELECT${distinct ? ' DISTINCT' : ''}
     } else {
       selectString = `
 SELECT${distinct ? ' DISTINCT' : ''}`;
-      selectString = [selectString, ...select.map((it, i) => (it.tableNameAlias ? `"${it.tableNameAlias}"` : it.tableName) + '.' + it.field + (it.fieldAlias ? ` AS "${it.fieldAlias}"` : '') + ((select.length - 1) !== i ? ',' : ''))].join('\n  ');
+      selectString = [selectString, ...select.map((it, i) => (it.isCustom ? it.value + (it.fieldAlias ? ` AS "${it.fieldAlias}"` : '') : ((it.tableNameAlias ? `"${it.tableNameAlias}"` : it.tableName) ? (it.tableNameAlias ? `"${it.tableNameAlias}"` : it.tableName) + '.' : '') + it.field + (it.fieldAlias ? ` AS "${it.fieldAlias}"` : '')) + ((select.length - 1) !== i ? ',' : ''))].join('\n  ');
     }
     return selectString;
   };
 
   const fromStringFn = (from) => {
     let fromString = '';
+    const operatorValue = (operator, name, condition, kg) => {
+      const on = condition ? `
+${kg}ON
+${kg}${condition}` : '';
+
+      if ([
+        'INNER JOIN',
+        'LEFT JOIN',
+        'RIGHT JOIN',
+        'FULL OUTER JOIN',
+      ].includes(operator)) {
+        switch (operator) {
+          case 'INNER JOIN':
+            return `${kg}INNER JOIN
+${kg}${name}` + on;
+          case 'LEFT JOIN':
+            return `${kg}LEFT JOIN
+${kg}${name}` + on;
+          case 'RIGHT JOIN':
+            return `${kg}RIGHT JOIN
+${kg}${name}` + on;
+          case 'FULL OUTER JOIN':
+            return `${kg}FULL OUTER JOIN
+${kg}${name}` + on;
+          default:
+        }
+      } else if (['CROSS JOIN', ','].includes(operator)) {
+        switch (operator) {
+          case 'CROSS JOIN':
+            return `${kg}CROSS JOIN
+${kg}${name}`;
+          case ',':
+            return `${kg},
+${kg}${name}`;
+          default:
+        }
+      } else {
+        return `${kg}${operator}
+${kg}${name}` + on;
+      }
+    };
+
     if (from.length > 0) {
       fromString = `
-FROM`;
-      fromString = [fromString, ...from.map((it, i) => it.name + (it.alias ? ` AS "${it.alias}"` : '') + ((from.length - 1) !== i ? ',' : ''))].join('\n  ');
+FROM
+`;
+      const string = (data, str) => {
+        data.forEach((item, index) => {
+          const ids = item.id.split('-').map(it => Number(it));
+          const kg = ids.map(it => '  ').join('');
+          if (item.isBracket) {
+            str = str + operatorValue(item.operator, `\n${kg}(
+${string(item.child, '')}
+${kg})\n`, item.condition, kg);
+          } else {
+            str = str + `${index !== 0 ? operatorValue(item.operator, item.name, item.condition, kg) : kg + item.name}\n`;
+          }
+        });
+        return str;
+      };
+
+      fromString = string(from, fromString);
     }
+
+
     return fromString;
   };
 

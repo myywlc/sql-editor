@@ -4,7 +4,14 @@ const reducer = (state, action) => {
     case 'init': {
       return payload;
     }
+    case 'init_table': {
+      return {
+        ...state,
+        allTableList: payload,
+      };
+    }
     case 'add_table': {
+      const id = state.keywordData.from.length;
       return {
         ...state,
         tableList: [
@@ -15,11 +22,31 @@ const reducer = (state, action) => {
           ...state?.keywordData ?? {},
           from: [
             ...state?.keywordData?.from ?? [],
-            { name: payload.tableName, alias: '' },
+            {
+              id: `${id}`,
+              name: payload.tableName,
+              alias: '',
+              isCustom: false,
+              operator: id === 0 ? null : ',',
+              condition: '',
+            },
           ],
         },
       };
     }
+
+    case 'add_table_from': {
+      // const find = state.tableList.find(it => it.tableName === payload.tableName);
+      // if (find) return;
+      return {
+        ...state,
+        tableList: [
+          ...state?.tableList ?? [],
+          payload,
+        ],
+      };
+    }
+
     case 'remove_table': {
       const { tableName } = payload;
       const newTableList = state.tableList.filter(it => it.tableName !== tableName);
@@ -73,6 +100,154 @@ const reducer = (state, action) => {
         },
       };
     }
+
+    case 'add_edit_table_field': {
+      const { tableName, tableNameAlias, field, checked, isCustom = false, id, value } = payload;
+      let newTableList = [];
+      let newSelect;
+
+      if (!id) {
+        if (!isCustom) {
+          state.tableList.forEach(item => {
+            if (item.tableName === tableName) {
+              const data = [];
+              item.data.forEach(it => {
+                if (it.name === field) {
+                  const checked = it?.checked ?? false;
+                  data.push({ ...it, checked: !checked });
+                } else {
+                  data.push(it);
+                }
+              });
+              newTableList.push({ ...item, data });
+            } else {
+              newTableList.push(item);
+            }
+          });
+
+          if (checked) {
+            newSelect = [...state.keywordData.select, {
+              tableName,
+              field,
+              tableNameAlias,
+              fieldAlias: '',
+            }];
+          } else {
+            newSelect = state.keywordData.select.filter(it => !(it.tableName === tableName && it.field === field));
+          }
+        } else {
+          newTableList = [...state.tableList];
+          newSelect = [...state.keywordData.select, { isCustom, value }];
+        }
+      } else {
+        const oldData = state.keywordData.select[id];
+        const { isCustom: oldIsCustom = false, tableName: oldTableName, field: oldField } = oldData;
+        const find = state.keywordData.select.filter(it => it.tableName === oldTableName && it.field === oldField);
+        if (isCustom === oldIsCustom) {
+          if (!isCustom) {
+            if (find.length === 1) {
+              state.tableList.forEach(item => {
+                if (item.tableName === oldTableName) {
+                  const data = [];
+                  item.data.forEach(it => {
+                    if (it.name === oldField) {
+                      const checked = it?.checked ?? false;
+                      data.push({ ...it, checked: !checked });
+                    } else {
+                      data.push(it);
+                    }
+                  });
+                  newTableList.push({ ...item, data });
+                } else {
+                  newTableList.push(item);
+                }
+              });
+
+              newSelect = state.keywordData.select.map((item, index) => {
+                if (index === id) {
+                  return { tableName, field, tableNameAlias, fieldAlias: '' };
+                } else {
+                  return item;
+                }
+              });
+            }
+          } else {
+            newTableList = [...state.tableList];
+            newSelect = state.keywordData.select.map((item, index) => {
+              if (index === id) {
+                return { isCustom, value };
+              } else {
+                return item;
+              }
+            });
+          }
+        } else {
+          if (!isCustom) {
+            state.tableList.forEach(item => {
+              if (item.tableName === tableName) {
+                const data = [];
+                item.data.forEach(it => {
+                  if (it.name === field) {
+                    const checked = it?.checked ?? false;
+                    data.push({ ...it, checked: !checked });
+                  } else {
+                    data.push(it);
+                  }
+                });
+                newTableList.push({ ...item, data });
+              } else {
+                newTableList.push(item);
+              }
+            });
+
+            newSelect = state.keywordData.select.map((item, index) => {
+              if (index === id) {
+                return { tableName, field, tableNameAlias, fieldAlias: '' };
+              } else {
+                return item;
+              }
+            });
+          } else {
+            if (find.length === 1) {
+              state.tableList.forEach(item => {
+                if (item.tableName === oldTableName) {
+                  const data = [];
+                  item.data.forEach(it => {
+                    if (it.name === oldField) {
+                      const checked = it?.checked ?? false;
+                      data.push({ ...it, checked: !checked });
+                    } else {
+                      data.push(it);
+                    }
+                  });
+                  newTableList.push({ ...item, data });
+                } else {
+                  newTableList.push(item);
+                }
+              });
+
+              newSelect = state.keywordData.select.map((item, index) => {
+                if (index === id) {
+                  return { isCustom, value };
+                } else {
+                  return item;
+                }
+              });
+            }
+          }
+        }
+      }
+
+      return {
+        ...state,
+        tableList: newTableList,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          select: newSelect,
+        },
+      };
+    }
+
     case 'fieldAliasChange': {
       const { tableName, field, value } = payload;
       const newSelect = [];
@@ -89,25 +264,6 @@ const reducer = (state, action) => {
         keywordData: {
           ...state?.keywordData ?? {},
           select: newSelect,
-        },
-      };
-    }
-    case 'tableAliasChange': {
-      const { tableName, value } = payload;
-      const newFrom = [];
-      state.keywordData.from.forEach(item => {
-        if (item.name === tableName) {
-          newFrom.push({ ...item, alias: value });
-        } else {
-          newFrom.push(item);
-        }
-      });
-
-      return {
-        ...state,
-        keywordData: {
-          ...state?.keywordData ?? {},
-          from: newFrom,
         },
       };
     }
@@ -195,6 +351,134 @@ const reducer = (state, action) => {
         },
       };
     }
+
+    case 'addFromFieldEquality': {
+      const { id, name, alias, isCustom } = payload;
+      const ids = id.split('-').map(it => Number(it));
+      const lastId = ids[ids.length - 1];
+
+      let data;
+      if (isCustom) {
+        data = {
+          id,
+          name,
+          alias,
+          isCustom: true,
+          operator: lastId === 0 ? null : ',',
+          condition: '',
+        };
+      } else {
+        data = {
+          id,
+          name,
+          alias,
+          isCustom: false,
+          operator: lastId === 0 ? null : ',',
+          condition: '',
+        };
+      }
+
+      let from = JSON.parse(JSON.stringify(state.keywordData.from));
+      let current = from;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          current[key] = data;
+        } else {
+          current = current[key].child;
+        }
+      });
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          from,
+        },
+      };
+    }
+    case 'removeFromItem': {
+      const { id, isTable, tableName } = payload;
+      const ids = id.split('-').map(it => Number(it));
+      let newTableList = [];
+
+      if (ids.length === 1 && isTable) {
+        newTableList = state.tableList.filter(it => it.tableName !== tableName);
+      } else {
+        newTableList = [...state.tableList];
+      }
+      let from = JSON.parse(JSON.stringify(state.keywordData.from));
+      let current = from;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          current.splice(key, 1);
+        } else {
+          current = current[key].child;
+        }
+      });
+      return {
+        ...state,
+        tableList: newTableList,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          from,
+        },
+      };
+    }
+    case 'addFromBracket': {
+      const { id } = payload;
+      const ids = id.split('-').map(it => Number(it));
+      const lastId = ids[ids.length - 1];
+
+      let from = JSON.parse(JSON.stringify(state.keywordData.from));
+      let current = from;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          current[key] = {
+            id,
+            isBracket: true,
+            child: [],
+            operator: lastId === 0 ? null : ',',
+            condition: '',
+          };
+        } else {
+          current = current[key].child;
+        }
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          from,
+        },
+      };
+    }
+    case 'changeFromKeyValue': {
+      const { id, fieldKey, value } = payload;
+      const ids = id.split('-').map(it => Number(it));
+
+      let from = JSON.parse(JSON.stringify(state.keywordData.from));
+      let current = from;
+      ids.forEach((key, index) => {
+        const isLast = index === ids.length - 1;
+        if (isLast) {
+          current[key][fieldKey] = value;
+        } else {
+          current = current[key].child;
+        }
+      });
+
+      return {
+        ...state,
+        keywordData: {
+          ...state?.keywordData ?? {},
+          from,
+        },
+      };
+    }
+
 
     case 'removeWhereItem': {
       const { id } = payload;
@@ -550,9 +834,9 @@ const reducer = (state, action) => {
       const { index, ...rest } = payload;
       const newGroupBy = state.keywordData.groupBy.map((it, i) => {
         if (index === i) {
-          return {...rest}
+          return { ...rest };
         }
-        return it
+        return it;
       });
 
       return {
@@ -623,9 +907,9 @@ const reducer = (state, action) => {
       const { index, ...rest } = payload;
       const newOrderBy = state.keywordData.orderBy.map((it, i) => {
         if (index === i) {
-          return {...rest}
+          return { ...rest };
         }
-        return it
+        return it;
       });
 
       return {
